@@ -1,879 +1,1387 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HourLog — Work Hours Tracker</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg: #0e0e10;
-    --surface: #18181c;
-    --surface2: #222228;
-    --border: #2e2e38;
-    --accent: #c8f135;
-    --accent2: #5bf0a0;
-    --text: #f0f0f2;
-    --muted: #888896;
-    --danger: #ff5566;
-    --radius: 14px;
-    --mono: 'DM Mono', monospace;
-    --sans: 'Syne', sans-serif;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { font-size: 16px; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--sans);
-    min-height: 100vh;
-    padding-bottom: 100px;
-  }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>HourLog — Work Hours Tracker</title>
+    <!-- PWA: Apple / iPhone Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="HourLog" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#0e0e10" />
+    <meta name="description" content="Track your daily work hours, weekly totals, monthly totals and pay." />
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%230e0e10'/%3E%3Ctext x='90' y='118' font-size='96' text-anchor='middle' fill='%23c8f135'%3E%E2%8F%B1%3C/text%3E%3C/svg%3E" />
+    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22HourLog%22,%22short_name%22:%22HourLog%22,%22start_url%22:%22./%22,%22display%22:%22standalone%22,%22background_color%22:%22%230e0e10%22,%22theme_color%22:%22%230e0e10%22}" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0e0e10;
+        --surface: #18181c;
+        --surface2: #222228;
+        --border: #2e2e38;
+        --accent: #c8f135;
+        --accent2: #5bf0a0;
+        --text: #f0f0f2;
+        --muted: #888896;
+        --danger: #ff5566;
+        --radius: 14px;
+        --mono: "DM Mono", monospace;
+        --sans: "Syne", sans-serif;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html {
+        font-size: 16px;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--sans);
+        min-height: 100vh;
+        padding-bottom: calc(100px + env(safe-area-inset-bottom));
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+      }
 
-  /* HEADER */
-  header {
-    position: sticky; top: 0; z-index: 100;
-    background: rgba(14,14,16,0.85);
-    backdrop-filter: blur(16px);
-    border-bottom: 1px solid var(--border);
-    padding: 16px 20px;
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .logo { font-size: 1.25rem; font-weight: 800; letter-spacing: -0.03em; }
-  .logo span { color: var(--accent); }
-  .settings-btn {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    color: var(--muted);
-    border-radius: 8px; padding: 8px 14px;
-    font-family: var(--mono); font-size: 0.8rem;
-    cursor: pointer; transition: all 0.2s;
-  }
-  .settings-btn:hover { border-color: var(--accent); color: var(--accent); }
+      /* HEADER */
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: rgba(14, 14, 16, 0.85);
+        backdrop-filter: blur(16px);
+        border-bottom: 1px solid var(--border);
+        padding: 16px 20px;
+        padding-top: calc(16px + env(safe-area-inset-top));
+        padding-left: calc(20px + env(safe-area-inset-left));
+        padding-right: calc(20px + env(safe-area-inset-right));
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .logo {
+        font-size: 1.25rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+      }
+      .logo span {
+        color: var(--accent);
+      }
+      .settings-btn {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        color: var(--muted);
+        border-radius: 8px;
+        padding: 8px 14px;
+        font-family: var(--mono);
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .settings-btn:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
 
-  /* MAIN LAYOUT */
-  main { max-width: 520px; margin: 0 auto; padding: 24px 16px; }
+      /* MAIN LAYOUT */
+      main {
+        max-width: 520px;
+        margin: 0 auto;
+        padding: 24px 16px;
+      }
 
-  /* SECTION TITLES */
-  .section-label {
-    font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.12em;
-    color: var(--muted); text-transform: uppercase; margin-bottom: 12px;
-  }
+      /* SECTION TITLES */
+      .section-label {
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        letter-spacing: 0.12em;
+        color: var(--muted);
+        text-transform: uppercase;
+        margin-bottom: 12px;
+      }
 
-  /* LOG ENTRY CARD */
-  .entry-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px;
-    margin-bottom: 24px;
-  }
-  .entry-card h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 18px; }
-  .field { margin-bottom: 14px; }
-  .field label { display: block; font-family: var(--mono); font-size: 0.78rem; color: var(--muted); margin-bottom: 6px; }
-  .field input {
-    width: 100%;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    color: var(--text);
-    font-family: var(--mono); font-size: 1rem;
-    padding: 12px 14px;
-    outline: none; transition: border-color 0.2s;
-  }
-  .field input:focus { border-color: var(--accent); }
-  .field input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.6); }
+      /* LOG ENTRY CARD */
+      .entry-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px;
+        margin-bottom: 24px;
+      }
+      .entry-card h2 {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin-bottom: 18px;
+      }
+      .field {
+        margin-bottom: 14px;
+      }
+      .field label {
+        display: block;
+        font-family: var(--mono);
+        font-size: 0.78rem;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+      .field input {
+        width: 100%;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        color: var(--text);
+        font-family: var(--mono);
+        font-size: 1rem;
+        padding: 12px 14px;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+      .field input:focus {
+        border-color: var(--accent);
+      }
+      .field input[type="date"]::-webkit-calendar-picker-indicator {
+        filter: invert(0.6);
+      }
 
-  .add-btn {
-    width: 100%;
-    background: var(--accent);
-    color: #0e0e10;
-    border: none; border-radius: 10px;
-    font-family: var(--sans); font-weight: 700; font-size: 1rem;
-    padding: 14px;
-    cursor: pointer; transition: transform 0.15s, opacity 0.15s;
-    margin-top: 4px;
-  }
-  .add-btn:hover { opacity: 0.88; }
-  .add-btn:active { transform: scale(0.98); }
+      .add-btn {
+        width: 100%;
+        background: var(--accent);
+        color: #0e0e10;
+        border: none;
+        border-radius: 10px;
+        font-family: var(--sans);
+        font-weight: 700;
+        font-size: 1rem;
+        padding: 14px;
+        cursor: pointer;
+        transition:
+          transform 0.15s,
+          opacity 0.15s;
+        margin-top: 4px;
+      }
+      .add-btn:hover {
+        opacity: 0.88;
+      }
+      .add-btn:active {
+        transform: scale(0.98);
+      }
 
-  /* STAT CHIPS */
-  .stat-row {
-    display: grid; grid-template-columns: 1fr 1fr;
-    gap: 12px; margin-bottom: 24px;
-  }
-  .stat-chip {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 16px;
-  }
-  .stat-chip.accent { border-color: var(--accent); background: rgba(200,241,53,0.06); }
-  .stat-chip.green  { border-color: var(--accent2); background: rgba(91,240,160,0.06); }
-  .stat-chip .chip-label {
-    font-family: var(--mono); font-size: 0.68rem; color: var(--muted);
-    letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px;
-  }
-  .stat-chip .chip-val {
-    font-size: 1.55rem; font-weight: 800; letter-spacing: -0.03em;
-    line-height: 1;
-  }
-  .stat-chip.accent .chip-val { color: var(--accent); }
-  .stat-chip.green  .chip-val { color: var(--accent2); }
-  .stat-chip .chip-sub {
-    font-family: var(--mono); font-size: 0.72rem; color: var(--muted); margin-top: 4px;
-  }
+      /* STAT CHIPS */
+      .stat-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 24px;
+      }
+      .stat-chip {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 16px;
+      }
+      .stat-chip.accent {
+        border-color: var(--accent);
+        background: rgba(200, 241, 53, 0.06);
+      }
+      .stat-chip.green {
+        border-color: var(--accent2);
+        background: rgba(91, 240, 160, 0.06);
+      }
+      .stat-chip .chip-label {
+        font-family: var(--mono);
+        font-size: 0.68rem;
+        color: var(--muted);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+      }
+      .stat-chip .chip-val {
+        font-size: 1.55rem;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        line-height: 1;
+        font-family: 'Space Mono', monospace;
+      }
+      .stat-chip.accent .chip-val {
+        color: var(--accent);
+      }
+      .stat-chip.green .chip-val {
+        color: var(--accent2);
+      }
+      .stat-chip .chip-sub {
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        color: var(--muted);
+        margin-top: 4px;
+      }
 
-  /* TABS */
-  .tabs { display: flex; gap: 6px; margin-bottom: 20px; }
-  .tab {
-    flex: 1; background: var(--surface); border: 1px solid var(--border);
-    border-radius: 8px; color: var(--muted);
-    font-family: var(--sans); font-weight: 600; font-size: 0.85rem;
-    padding: 10px 6px; cursor: pointer; transition: all 0.2s; text-align: center;
-  }
-  .tab.active { background: var(--accent); color: #0e0e10; border-color: var(--accent); }
+      /* TABS */
+      .tabs {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 20px;
+      }
+      .tab {
+        flex: 1;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--muted);
+        font-family: var(--sans);
+        font-weight: 600;
+        font-size: 0.85rem;
+        padding: 10px 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: center;
+      }
+      .tab.active {
+        background: var(--accent);
+        color: #0e0e10;
+        border-color: var(--accent);
+      }
 
-  /* WEEK / MONTH GROUPS */
-  .group { margin-bottom: 24px; }
-  .group-header {
-    display: flex; justify-content: space-between; align-items: baseline;
-    padding: 10px 14px;
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 10px 10px 0 0;
-    border-bottom: none;
-  }
-  .group-header .g-title { font-weight: 700; font-size: 0.95rem; }
-  .group-header .g-total {
-    font-family: var(--mono); font-size: 0.82rem;
-    color: var(--accent);
-  }
-  .group-header .g-pay {
-    font-family: var(--mono); font-size: 0.75rem;
-    color: var(--accent2);
-  }
-  .group-entries { border: 1px solid var(--border); border-radius: 0 0 10px 10px; overflow: hidden; }
-  .entry-row {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 13px 14px;
-    border-bottom: 1px solid var(--border);
-    transition: background 0.15s;
-  }
-  .entry-row:last-child { border-bottom: none; }
-  .entry-row:hover { background: var(--surface2); }
-  .entry-date { font-family: var(--mono); font-size: 0.82rem; color: var(--muted); }
-  .entry-day  { font-weight: 700; font-size: 0.92rem; }
-  .entry-note { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
-  .entry-hrs {
-    font-family: var(--mono); font-weight: 500; font-size: 1rem; color: var(--text);
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 6px; padding: 4px 10px; min-width: 54px; text-align: center;
-  }
-  .entry-right { display: flex; align-items: center; gap: 8px; }
-  .del-btn {
-    background: none; border: none; color: var(--muted); cursor: pointer;
-    font-size: 1rem; padding: 4px 6px; border-radius: 6px; transition: all 0.15s;
-    line-height: 1;
-  }
-  .del-btn:hover { color: var(--danger); background: rgba(255,85,102,0.1); }
+      /* WEEK / MONTH GROUPS */
+      .group {
+        margin-bottom: 24px;
+      }
+      .group-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        padding: 10px 14px;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 10px 10px 0 0;
+        border-bottom: none;
+      }
+      .group-header .g-title {
+        font-weight: 700;
+        font-size: 0.95rem;
+      }
+      .group-header .g-total {
+        font-family: var(--mono);
+        font-size: 0.82rem;
+        color: var(--accent);
+      }
+      .group-header .g-pay {
+        font-family: var(--mono);
+        font-size: 0.75rem;
+        color: var(--accent2);
+      }
+      .group-entries {
+        border: 1px solid var(--border);
+        border-radius: 0 0 10px 10px;
+        overflow: hidden;
+      }
+      .entry-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 13px 14px;
+        border-bottom: 1px solid var(--border);
+        transition: background 0.15s;
+      }
+      .entry-row:last-child {
+        border-bottom: none;
+      }
+      .entry-row:hover {
+        background: var(--surface2);
+      }
+      .entry-date {
+        font-family: var(--mono);
+        font-size: 0.82rem;
+        color: var(--muted);
+      }
+      .entry-day {
+        font-weight: 700;
+        font-size: 0.92rem;
+      }
+      .entry-note {
+        font-size: 0.78rem;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+      .entry-hrs {
+        font-family: var(--mono);
+        font-weight: 500;
+        font-size: 1rem;
+        color: var(--text);
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 4px 10px;
+        min-width: 54px;
+        text-align: center;
+      }
+      .entry-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .del-btn {
+        background: none;
+        border: none;
+        color: var(--muted);
+        cursor: pointer;
+        font-size: 1rem;
+        padding: 4px 6px;
+        border-radius: 6px;
+        transition: all 0.15s;
+        line-height: 1;
+      }
+      .del-btn:hover {
+        color: var(--danger);
+        background: rgba(255, 85, 102, 0.1);
+      }
 
-  /* EMPTY STATE */
-  .empty {
-    text-align: center; padding: 48px 24px;
-    color: var(--muted); font-family: var(--mono); font-size: 0.85rem;
-    border: 1px dashed var(--border); border-radius: var(--radius);
-  }
-  .empty-icon { font-size: 2.5rem; margin-bottom: 12px; opacity: 0.4; }
+      /* EMPTY STATE */
+      .empty {
+        text-align: center;
+        padding: 48px 24px;
+        color: var(--muted);
+        font-family: var(--mono);
+        font-size: 0.85rem;
+        border: 1px dashed var(--border);
+        border-radius: var(--radius);
+      }
+      .empty-icon {
+        font-size: 2.5rem;
+        margin-bottom: 12px;
+        opacity: 0.4;
+      }
 
-  /* MODAL */
-  .modal-overlay {
-    display: none; position: fixed; inset: 0; z-index: 200;
-    background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
-    align-items: center; justify-content: center; padding: 20px;
-  }
-  .modal-overlay.open { display: flex; }
-  .modal {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 28px;
-    width: 100%; max-width: 400px;
-    animation: slideUp 0.2s ease;
-  }
-  @keyframes slideUp {
-    from { transform: translateY(20px); opacity: 0; }
-    to   { transform: translateY(0); opacity: 1; }
-  }
-  .modal h3 { font-size: 1.2rem; font-weight: 800; margin-bottom: 20px; }
-  .modal-footer { display: flex; gap: 10px; margin-top: 20px; }
-  .modal-footer button { flex: 1; padding: 12px; border-radius: 10px; font-family: var(--sans); font-weight: 700; font-size: 0.95rem; cursor: pointer; }
-  .btn-cancel { background: var(--surface2); border: 1px solid var(--border); color: var(--muted); }
-  .btn-save   { background: var(--accent); border: none; color: #0e0e10; }
+      /* MODAL */
+      .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 200;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(8px);
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+      .modal-overlay.open {
+        display: flex;
+      }
+      .modal {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 28px;
+        width: 100%;
+        max-width: 400px;
+        animation: slideUp 0.2s ease;
+      }
+      @keyframes slideUp {
+        from {
+          transform: translateY(20px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+      .modal h3 {
+        font-size: 1.2rem;
+        font-weight: 800;
+        margin-bottom: 20px;
+      }
+      .modal-footer {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+      }
+      .modal-footer button {
+        flex: 1;
+        padding: 12px;
+        border-radius: 10px;
+        font-family: var(--sans);
+        font-weight: 700;
+        font-size: 0.95rem;
+        cursor: pointer;
+      }
+      .btn-cancel {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        color: var(--muted);
+      }
+      .btn-save {
+        background: var(--accent);
+        border: none;
+        color: #0e0e10;
+      }
 
-  /* TOAST */
-  .toast {
-    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 40px; padding: 12px 22px;
-    font-family: var(--mono); font-size: 0.82rem; color: var(--text);
-    transition: transform 0.3s ease; z-index: 300; white-space: nowrap;
-    pointer-events: none;
-  }
-  .toast.show { transform: translateX(-50%) translateY(0); }
+      /* TOAST */
+      .toast {
+        position: fixed;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%) translateY(80px);
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 40px;
+        padding: 12px 22px;
+        font-family: var(--mono);
+        font-size: 0.82rem;
+        color: var(--text);
+        transition: transform 0.3s ease;
+        z-index: 300;
+        white-space: nowrap;
+        pointer-events: none;
+      }
+      .toast.show {
+        transform: translateX(-50%) translateY(0);
+      }
 
-  /* CURRENCY SYMBOL INLINE */
-  .currency { font-size: 0.8em; opacity: 0.7; }
+      /* CURRENCY SYMBOL INLINE */
+      .currency {
+        font-size: 0.8em;
+        opacity: 0.7;
+      }
 
-  /* EXPORT / IMPORT CARD */
-  .io-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px;
-    margin-bottom: 24px;
-  }
-  .io-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-  .io-btn {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 6px; padding: 16px 10px;
-    border-radius: 10px; border: 1px solid var(--border);
-    background: var(--surface2); color: var(--text);
-    font-family: var(--sans); font-weight: 700; font-size: 0.82rem;
-    cursor: pointer; transition: all 0.2s; text-align: center; line-height: 1.2;
-  }
-  .io-btn .io-icon { font-size: 1.4rem; }
-  .io-btn:hover { border-color: var(--accent); color: var(--accent); }
-  .io-btn.import-btn:hover { border-color: var(--accent2); color: var(--accent2); }
-  .io-btn.danger-btn { color: var(--muted); }
-  .io-btn.danger-btn:hover { border-color: var(--danger); color: var(--danger); background: rgba(255,85,102,0.06); }
-  .io-note { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); text-align: center; }
+      /* EXPORT / IMPORT CARD */
+      .io-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px;
+        margin-bottom: 24px;
+      }
+      .io-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+      .io-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 16px 10px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: var(--surface2);
+        color: var(--text);
+        font-family: var(--sans);
+        font-weight: 700;
+        font-size: 0.82rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: center;
+        line-height: 1.2;
+      }
+      .io-btn .io-icon {
+        font-size: 1.4rem;
+      }
+      .io-btn:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      .io-btn.import-btn:hover {
+        border-color: var(--accent2);
+        color: var(--accent2);
+      }
+      .io-btn.danger-btn {
+        color: var(--muted);
+      }
+      .io-btn.danger-btn:hover {
+        border-color: var(--danger);
+        color: var(--danger);
+        background: rgba(255, 85, 102, 0.06);
+      }
+      .io-note {
+        font-family: var(--mono);
+        font-size: 0.7rem;
+        color: var(--muted);
+        text-align: center;
+      }
 
-  /* IMPORT MODAL extras */
-  .import-dropzone {
-    border: 2px dashed var(--border); border-radius: 10px;
-    padding: 28px 16px; text-align: center;
-    cursor: pointer; transition: border-color 0.2s, background 0.2s;
-    margin-bottom: 14px;
-  }
-  .import-dropzone:hover, .import-dropzone.drag-over {
-    border-color: var(--accent2); background: rgba(91,240,160,0.04);
-  }
-  .import-dropzone .dz-icon { font-size: 2rem; margin-bottom: 8px; }
-  .import-dropzone .dz-text { font-family: var(--mono); font-size: 0.8rem; color: var(--muted); }
-  .import-dropzone .dz-text strong { color: var(--accent2); }
-  #import-file-input { display: none; }
+      /* IMPORT MODAL extras */
+      .import-dropzone {
+        border: 2px dashed var(--border);
+        border-radius: 10px;
+        padding: 28px 16px;
+        text-align: center;
+        cursor: pointer;
+        transition:
+          border-color 0.2s,
+          background 0.2s;
+        margin-bottom: 14px;
+      }
+      .import-dropzone:hover,
+      .import-dropzone.drag-over {
+        border-color: var(--accent2);
+        background: rgba(91, 240, 160, 0.04);
+      }
+      .import-dropzone .dz-icon {
+        font-size: 2rem;
+        margin-bottom: 8px;
+      }
+      .import-dropzone .dz-text {
+        font-family: var(--mono);
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+      .import-dropzone .dz-text strong {
+        color: var(--accent2);
+      }
+      #import-file-input {
+        display: none;
+      }
 
-  .import-mode-tabs { display: flex; gap: 6px; margin-bottom: 14px; }
-  .import-mode-tab {
-    flex: 1; padding: 9px 6px; border-radius: 8px;
-    border: 1px solid var(--border); background: var(--surface2);
-    color: var(--muted); font-family: var(--sans); font-weight: 600; font-size: 0.78rem;
-    cursor: pointer; transition: all 0.2s; text-align: center;
-  }
-  .import-mode-tab.active { background: var(--accent2); color: #0e0e10; border-color: var(--accent2); }
+      .import-mode-tabs {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 14px;
+      }
+      .import-mode-tab {
+        flex: 1;
+        padding: 9px 6px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: var(--surface2);
+        color: var(--muted);
+        font-family: var(--sans);
+        font-weight: 600;
+        font-size: 0.78rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: center;
+      }
+      .import-mode-tab.active {
+        background: var(--accent2);
+        color: #0e0e10;
+        border-color: var(--accent2);
+      }
 
-  .import-preview {
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 8px; padding: 12px 14px;
-    font-family: var(--mono); font-size: 0.78rem; color: var(--muted);
-    max-height: 140px; overflow-y: auto; margin-bottom: 14px;
-    display: none;
-  }
-  .import-preview.visible { display: block; }
-  .preview-row { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px solid var(--border); }
-  .preview-row:last-child { border-bottom: none; }
-  .preview-conflict { color: var(--danger); }
-  .preview-new { color: var(--accent2); }
+      .import-preview {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 12px 14px;
+        font-family: var(--mono);
+        font-size: 0.78rem;
+        color: var(--muted);
+        max-height: 140px;
+        overflow-y: auto;
+        margin-bottom: 14px;
+        display: none;
+      }
+      .import-preview.visible {
+        display: block;
+      }
+      .preview-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 3px 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .preview-row:last-child {
+        border-bottom: none;
+      }
+      .preview-conflict {
+        color: var(--danger);
+      }
+      .preview-new {
+        color: var(--accent2);
+      }
 
-  .conflict-badge {
-    display: inline-block; padding: 3px 10px; border-radius: 20px;
-    font-family: var(--mono); font-size: 0.72rem; font-weight: 500;
-    margin-bottom: 12px;
-  }
-  .conflict-badge.has-conflicts { background: rgba(255,85,102,0.15); color: var(--danger); border: 1px solid rgba(255,85,102,0.3); }
-  .conflict-badge.no-conflicts  { background: rgba(91,240,160,0.12); color: var(--accent2); border: 1px solid rgba(91,240,160,0.3); }
+      .conflict-badge {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        font-weight: 500;
+        margin-bottom: 12px;
+      }
+      .conflict-badge.has-conflicts {
+        background: rgba(255, 85, 102, 0.15);
+        color: var(--danger);
+        border: 1px solid rgba(255, 85, 102, 0.3);
+      }
+      .conflict-badge.no-conflicts {
+        background: rgba(91, 240, 160, 0.12);
+        color: var(--accent2);
+        border: 1px solid rgba(91, 240, 160, 0.3);
+      }
 
-  @media (max-width: 360px) {
-    .stat-chip .chip-val { font-size: 1.25rem; }
-    .io-grid { grid-template-columns: 1fr 1fr; }
-  }
-</style>
-</head>
-<body>
+      @media (max-width: 360px) {
+        .stat-chip .chip-val {
+          font-size: 1.25rem;
+        }
+        .io-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
 
-<header>
-  <div class="logo">Hour<span>Log</span></div>
-  <button class="settings-btn" onclick="openSettings()">⚙ Settings</button>
-</header>
+      /* PWA INSTALL BANNER */
+      .pwa-banner {
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        z-index: 400;
+        background: var(--surface);
+        border-top: 1px solid var(--border);
+        padding: 16px 20px calc(16px + env(safe-area-inset-bottom));
+        display: flex; align-items: center; gap: 14px;
+        animation: slideUp 0.3s ease;
+        transform: translateY(0);
+      }
+      .pwa-banner.hidden { display: none; }
+      .pwa-banner-icon { font-size: 2rem; flex-shrink: 0; }
+      .pwa-banner-text { flex: 1; }
+      .pwa-banner-text b { display: block; font-size: 0.9rem; margin-bottom: 2px; }
+      .pwa-banner-text span { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); }
+      .pwa-banner-actions { display: flex; gap: 8px; flex-shrink: 0; }
+      .pwa-install-btn {
+        background: var(--accent); color: #0e0e10;
+        border: none; border-radius: 8px;
+        font-family: var(--sans); font-weight: 700; font-size: 0.82rem;
+        padding: 9px 14px; cursor: pointer; white-space: nowrap;
+      }
+      .pwa-dismiss-btn {
+        background: var(--surface2); color: var(--muted);
+        border: 1px solid var(--border); border-radius: 8px;
+        font-family: var(--mono); font-size: 0.78rem;
+        padding: 9px 12px; cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="logo">Hour<span>Log</span></div>
+      <button class="settings-btn" onclick="openSettings()">⚙ Settings</button>
+    </header>
 
-<main>
-  <!-- Quick Stats -->
-  <div class="section-label">Overview</div>
-  <div class="stat-row">
-    <div class="stat-chip accent">
-      <div class="chip-label">This Week</div>
-      <div class="chip-val" id="stat-week">0.0</div>
-      <div class="chip-sub" id="stat-week-pay">—</div>
+    <main>
+      <!-- Quick Stats -->
+      <div class="section-label">Overview</div>
+      <div class="stat-row">
+        <div class="stat-chip accent">
+          <div class="chip-label">This Week</div>
+          <div class="chip-val" id="stat-week">0.0</div>
+          <div class="chip-sub" id="stat-week-pay">—</div>
+        </div>
+        <div class="stat-chip green">
+          <div class="chip-label">This Month</div>
+          <div class="chip-val" id="stat-month">0.0</div>
+          <div class="chip-sub" id="stat-month-pay">—</div>
+        </div>
+      </div>
+
+      <!-- Log Entry -->
+      <div class="section-label">Log Hours</div>
+      <div class="entry-card">
+        <div class="field">
+          <label>DATE</label>
+          <input type="date" id="input-date" />
+        </div>
+        <div class="field">
+          <label>HOURS WORKED</label>
+          <input type="number" id="input-hours" placeholder="Worked hours" min="0.5" max="24" step="0.1" />
+        </div>
+        <button class="add-btn" onclick="addEntry()">+ Add Entry</button>
+      </div>
+
+      <!-- Log History -->
+      <div class="section-label">History</div>
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('week', this)">By Week</div>
+        <div class="tab" onclick="switchTab('month', this)">By Month</div>
+      </div>
+      <div id="log-container"></div>
+
+      <!-- Export / Import -->
+      <div class="section-label">Export & Import</div>
+      <div class="io-card">
+        <div class="io-grid">
+          <button class="io-btn" onclick="exportJSON()"><span class="io-icon">⬇</span>JSON Backup</button>
+          <button class="io-btn" onclick="exportCSV()"><span class="io-icon">📊</span>CSV Spreadsheet</button>
+          <button class="io-btn import-btn" onclick="openImport()"><span class="io-icon">⬆</span>Import File</button>
+          <button class="io-btn danger-btn" onclick="clearAllData()">
+            <span class="io-icon">🗑</span>Clear All Data
+          </button>
+        </div>
+        <div class="io-note">JSON = full backup (restores all data) · CSV = open in Excel/Sheets</div>
+      </div>
+    </main>
+
+    <!-- Import Modal -->
+    <div class="modal-overlay" id="import-modal">
+      <div class="modal" style="max-width: 440px">
+        <h3>Import Data</h3>
+
+        <!-- Merge mode tabs -->
+        <div class="import-mode-tabs">
+          <div class="import-mode-tab active" id="mode-merge" onclick="setImportMode('merge', this)">Merge</div>
+          <div class="import-mode-tab" id="mode-replace" onclick="setImportMode('replace', this)">Replace All</div>
+        </div>
+
+        <!-- Drop zone -->
+        <div
+          class="import-dropzone"
+          id="import-dropzone"
+          onclick="document.getElementById('import-file-input').click()"
+        >
+          <div class="dz-icon">📂</div>
+          <div class="dz-text">
+            Drop a <strong>.json</strong> or <strong>.csv</strong> file here<br />or click to browse
+          </div>
+        </div>
+        <input type="file" id="import-file-input" accept=".json,.csv" />
+
+        <!-- Preview -->
+        <div id="import-preview" class="import-preview"></div>
+        <div id="conflict-badge" style="display: none"></div>
+
+        <div class="modal-footer">
+          <button class="btn-cancel" onclick="closeImport()">Cancel</button>
+          <button
+            class="btn-save"
+            id="import-confirm-btn"
+            onclick="confirmImport()"
+            disabled
+            style="opacity: 0.4; cursor: not-allowed"
+          >
+            Import
+          </button>
+        </div>
+      </div>
     </div>
-    <div class="stat-chip green">
-      <div class="chip-label">This Month</div>
-      <div class="chip-val" id="stat-month">0.0</div>
-      <div class="chip-sub" id="stat-month-pay">—</div>
-    </div>
-  </div>
 
-  <!-- Log Entry -->
-  <div class="section-label">Log Hours</div>
-  <div class="entry-card">
-    <div class="field">
-      <label>DATE</label>
-      <input type="date" id="input-date">
-    </div>
-    <div class="field">
-      <label>HOURS WORKED</label>
-      <input type="number" id="input-hours" placeholder="8.5" min="0" max="24" step="0.1">
-    </div>
-    <div class="field">
-      <label>NOTE (optional)</label>
-      <input type="text" id="input-note" placeholder="e.g. Remote day, overtime...">
-    </div>
-    <button class="add-btn" onclick="addEntry()">+ Add Entry</button>
-  </div>
-
-  <!-- Log History -->
-  <div class="section-label">History</div>
-  <div class="tabs">
-    <div class="tab active" onclick="switchTab('week', this)">By Week</div>
-    <div class="tab"       onclick="switchTab('month', this)">By Month</div>
-  </div>
-  <div id="log-container"></div>
-
-  <!-- Export / Import -->
-  <div class="section-label">Export & Import</div>
-  <div class="io-card">
-    <div class="io-grid">
-      <button class="io-btn" onclick="exportJSON()">
-        <span class="io-icon">⬇</span>JSON Backup
-      </button>
-      <button class="io-btn" onclick="exportCSV()">
-        <span class="io-icon">📊</span>CSV Spreadsheet
-      </button>
-      <button class="io-btn import-btn" onclick="openImport()">
-        <span class="io-icon">⬆</span>Import File
-      </button>
-      <button class="io-btn danger-btn" onclick="clearAllData()">
-        <span class="io-icon">🗑</span>Clear All Data
-      </button>
-    </div>
-    <div class="io-note">JSON = full backup (restores all data) · CSV = open in Excel/Sheets</div>
-  </div>
-
-</main>
-
-<!-- Import Modal -->
-<div class="modal-overlay" id="import-modal">
-  <div class="modal" style="max-width:440px">
-    <h3>Import Data</h3>
-
-    <!-- Merge mode tabs -->
-    <div class="import-mode-tabs">
-      <div class="import-mode-tab active" id="mode-merge" onclick="setImportMode('merge', this)">Merge</div>
-      <div class="import-mode-tab" id="mode-replace" onclick="setImportMode('replace', this)">Replace All</div>
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settings-modal">
+      <div class="modal">
+        <h3>Settings</h3>
+        <div class="field">
+          <label>HOURLY WAGE</label>
+          <input type="number" id="s-wage" placeholder="25.00" min="0" step="0.01" />
+        </div>
+        <div class="field">
+          <label>CURRENCY SYMBOL</label>
+          <input type="text" id="s-currency" placeholder="$" maxlength="3" />
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel" onclick="closeSettings()">Cancel</button>
+          <button class="btn-save" onclick="saveSettings()">Save</button>
+        </div>
+      </div>
     </div>
 
-    <!-- Drop zone -->
-    <div class="import-dropzone" id="import-dropzone" onclick="document.getElementById('import-file-input').click()">
-      <div class="dz-icon">📂</div>
-      <div class="dz-text">Drop a <strong>.json</strong> or <strong>.csv</strong> file here<br>or click to browse</div>
+    <!-- PWA Install Banner (shown on iOS Safari) -->
+    <div class="pwa-banner hidden" id="pwa-banner">
+      <div class="pwa-banner-icon">⏱</div>
+      <div class="pwa-banner-text">
+        <b>Add to Home Screen</b>
+        <span>Tap <strong>Share</strong> → <strong>Add to Home Screen</strong> for the app experience</span>
+      </div>
+      <div class="pwa-banner-actions">
+        <button class="pwa-dismiss-btn" onclick="dismissPWA()">✕</button>
+      </div>
     </div>
-    <input type="file" id="import-file-input" accept=".json,.csv">
 
-    <!-- Preview -->
-    <div id="import-preview" class="import-preview"></div>
-    <div id="conflict-badge" style="display:none"></div>
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
 
-    <div class="modal-footer">
-      <button class="btn-cancel" onclick="closeImport()">Cancel</button>
-      <button class="btn-save" id="import-confirm-btn" onclick="confirmImport()" disabled style="opacity:0.4;cursor:not-allowed">Import</button>
-    </div>
-  </div>
-</div>
+    <script>
+      // ── DATA ────────────────────────────────────────────────
+      const STORE_ENTRIES = "hourlog_entries";
+      const STORE_SETTINGS = "hourlog_settings";
 
-<!-- Settings Modal -->
-<div class="modal-overlay" id="settings-modal">
-  <div class="modal">
-    <h3>Settings</h3>
-    <div class="field">
-      <label>HOURLY WAGE</label>
-      <input type="number" id="s-wage" placeholder="25.00" min="0" step="0.01">
-    </div>
-    <div class="field">
-      <label>CURRENCY SYMBOL</label>
-      <input type="text" id="s-currency" placeholder="$" maxlength="3">
-    </div>
-    <div class="modal-footer">
-      <button class="btn-cancel" onclick="closeSettings()">Cancel</button>
-      <button class="btn-save" onclick="saveSettings()">Save</button>
-    </div>
-  </div>
-</div>
+      function load(key, def) {
+        try {
+          const v = localStorage.getItem(key);
+          return v ? JSON.parse(v) : def;
+        } catch {
+          return def;
+        }
+      }
+      function save(key, val) {
+        localStorage.setItem(key, JSON.stringify(val));
+      }
 
-<!-- Toast -->
-<div class="toast" id="toast"></div>
+      let entries = load(STORE_ENTRIES, []);
+      let settings = load(STORE_SETTINGS, { wage: 0, currency: "$" });
 
-<script>
-// ── DATA ────────────────────────────────────────────────
-const STORE_ENTRIES  = 'hourlog_entries';
-const STORE_SETTINGS = 'hourlog_settings';
+      // ── DATE HELPERS ─────────────────────────────────────────
+      const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      const MONTHS = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+      ];
 
-function load(key, def) {
-  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : def; }
-  catch { return def; }
-}
-function save(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+      function parseLocalDate(str) {
+        const [y, m, d] = str.split("-").map(Number);
+        return new Date(y, m - 1, d);
+      }
+      function toISODate(d) {
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      }
+      function getMondayOfWeek(d) {
+        const day = d.getDay(); // 0=Sun
+        const diff = day === 0 ? -6 : 1 - day;
+        const mon = new Date(d);
+        mon.setDate(d.getDate() + diff);
+        return mon;
+      }
+      function weekKey(dateStr) {
+        const d = parseLocalDate(dateStr);
+        const mon = getMondayOfWeek(d);
+        return toISODate(mon);
+      }
+      function monthKey(dateStr) {
+        return dateStr.slice(0, 7);
+      }
+      function formatWeekRange(monStr) {
+        const mon = parseLocalDate(monStr);
+        const sun = new Date(mon);
+        sun.setDate(mon.getDate() + 6);
+        const fmt = (d) => `${d.getDate()} ${MONTHS[d.getMonth()].slice(0, 3)}`;
+        return `${fmt(mon)} – ${fmt(sun)}, ${mon.getFullYear()}`;
+      }
+      function formatMonth(mk) {
+        const [y, m] = mk.split("-");
+        return `${MONTHS[parseInt(m) - 1]} ${y}`;
+      }
+      function today() {
+        return toISODate(new Date());
+      }
+      function currentWeekKey() {
+        return weekKey(today());
+      }
+      function currentMonthKey() {
+        return monthKey(today());
+      }
 
-let entries  = load(STORE_ENTRIES, []);
-let settings = load(STORE_SETTINGS, { wage: 0, currency: '$' });
+      // ── RENDERING ────────────────────────────────────────────
+      let currentTab = "week";
 
-// ── DATE HELPERS ─────────────────────────────────────────
-const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-const MONTHS = ['January','February','March','April','May','June',
-                'July','August','September','October','November','December'];
+      function fmt(h) {
+        return h.toFixed(1);
+      }
+      function pay(h) {
+        if (!settings.wage) return null;
+        return `${settings.currency}${(h * settings.wage).toFixed(2)}`;
+      }
 
-function parseLocalDate(str) {
-  const [y,m,d] = str.split('-').map(Number);
-  return new Date(y, m-1, d);
-}
-function toISODate(d) {
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
-function getMondayOfWeek(d) {
-  const day = d.getDay(); // 0=Sun
-  const diff = (day === 0) ? -6 : 1 - day;
-  const mon = new Date(d); mon.setDate(d.getDate() + diff);
-  return mon;
-}
-function weekKey(dateStr) {
-  const d = parseLocalDate(dateStr);
-  const mon = getMondayOfWeek(d);
-  return toISODate(mon);
-}
-function monthKey(dateStr) { return dateStr.slice(0, 7); }
-function formatWeekRange(monStr) {
-  const mon = parseLocalDate(monStr);
-  const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
-  const fmt = d => `${d.getDate()} ${MONTHS[d.getMonth()].slice(0,3)}`;
-  return `${fmt(mon)} – ${fmt(sun)}, ${mon.getFullYear()}`;
-}
-function formatMonth(mk) {
-  const [y,m] = mk.split('-');
-  return `${MONTHS[parseInt(m)-1]} ${y}`;
-}
-function today() { return toISODate(new Date()); }
-function currentWeekKey() { return weekKey(today()); }
-function currentMonthKey() { return monthKey(today()); }
+      function renderStats() {
+        const wk = currentWeekKey(),
+          mk = currentMonthKey();
+        const wkHrs = entries.filter((e) => weekKey(e.date) === wk).reduce((s, e) => s + e.hours, 0);
+        const mkHrs = entries.filter((e) => monthKey(e.date) === mk).reduce((s, e) => s + e.hours, 0);
 
-// ── RENDERING ────────────────────────────────────────────
-let currentTab = 'week';
+        document.getElementById("stat-week").textContent = fmt(wkHrs);
+        document.getElementById("stat-month").textContent = fmt(mkHrs);
 
-function fmt(h) { return h.toFixed(1); }
-function pay(h) {
-  if (!settings.wage) return null;
-  return `${settings.currency}${(h * settings.wage).toFixed(2)}`;
-}
+        const wp = pay(wkHrs),
+          mp = pay(mkHrs);
+        document.getElementById("stat-week-pay").textContent = wp ? `≈ ${wp}` : "hrs · set wage to see pay";
+        document.getElementById("stat-month-pay").textContent = mp ? `≈ ${mp}` : "hrs · set wage to see pay";
+      }
 
-function renderStats() {
-  const wk = currentWeekKey(), mk = currentMonthKey();
-  const wkHrs  = entries.filter(e => weekKey(e.date)  === wk).reduce((s,e) => s + e.hours, 0);
-  const mkHrs  = entries.filter(e => monthKey(e.date) === mk).reduce((s,e) => s + e.hours, 0);
+      function renderLog() {
+        const container = document.getElementById("log-container");
+        if (!entries.length) {
+          container.innerHTML = `<div class="empty"><div class="empty-icon">⏱</div>No entries yet.<br>Add your first work day above.</div>`;
+          return;
+        }
 
-  document.getElementById('stat-week').textContent  = fmt(wkHrs);
-  document.getElementById('stat-month').textContent = fmt(mkHrs);
+        const sorted = [...entries].sort((a, b) => b.date.localeCompare(a.date));
 
-  const wp = pay(wkHrs), mp = pay(mkHrs);
-  document.getElementById('stat-week-pay').textContent  = wp  ? `≈ ${wp}`  : 'hrs · set wage to see pay';
-  document.getElementById('stat-month-pay').textContent = mp  ? `≈ ${mp}`  : 'hrs · set wage to see pay';
-}
+        // Group
+        const groups = {};
+        sorted.forEach((e) => {
+          const k = currentTab === "week" ? weekKey(e.date) : monthKey(e.date);
+          if (!groups[k]) groups[k] = [];
+          groups[k].push(e);
+        });
 
-function renderLog() {
-  const container = document.getElementById('log-container');
-  if (!entries.length) {
-    container.innerHTML = `<div class="empty"><div class="empty-icon">⏱</div>No entries yet.<br>Add your first work day above.</div>`;
-    return;
-  }
+        const keys = Object.keys(groups).sort((a, b) => b.localeCompare(a));
+        let html = "";
+        keys.forEach((k) => {
+          const list = groups[k];
+          const total = list.reduce((s, e) => s + e.hours, 0);
+          const p = pay(total);
+          const title = currentTab === "week" ? `Week of ${formatWeekRange(k)}` : formatMonth(k);
 
-  const sorted = [...entries].sort((a,b) => b.date.localeCompare(a.date));
-
-  // Group
-  const groups = {};
-  sorted.forEach(e => {
-    const k = currentTab === 'week' ? weekKey(e.date) : monthKey(e.date);
-    if (!groups[k]) groups[k] = [];
-    groups[k].push(e);
-  });
-
-  const keys = Object.keys(groups).sort((a,b) => b.localeCompare(a));
-  let html = '';
-  keys.forEach(k => {
-    const list = groups[k];
-    const total = list.reduce((s,e) => s + e.hours, 0);
-    const p = pay(total);
-    const title = currentTab === 'week' ? `Week of ${formatWeekRange(k)}` : formatMonth(k);
-
-    html += `<div class="group">
+          html += `<div class="group">
       <div class="group-header">
         <div>
           <div class="g-title">${title}</div>
-          ${p ? `<div class="g-pay">${p}</div>` : ''}
+          ${p ? `<div class="g-pay">${p}</div>` : ""}
         </div>
         <div class="g-total">${fmt(total)} hrs</div>
       </div>
       <div class="group-entries">`;
 
-    list.forEach(e => {
-      const d = parseLocalDate(e.date);
-      const dayName = DAYS[d.getDay()];
-      const dateDisp = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
-      html += `<div class="entry-row">
+          list.forEach((e) => {
+            const d = parseLocalDate(e.date);
+            const dayName = DAYS[d.getDay()];
+            const dateDisp = `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
+            html += `<div class="entry-row">
         <div>
           <div class="entry-day">${dayName}</div>
-          <div class="entry-date">${dateDisp}${e.note ? ' · ' + escHtml(e.note) : ''}</div>
+          <div class="entry-date">${dateDisp}${e.note ? " · " + escHtml(e.note) : ""}</div>
         </div>
         <div class="entry-right">
           <div class="entry-hrs">${fmt(e.hours)}</div>
           <button class="del-btn" onclick="deleteEntry('${e.id}')" title="Delete">✕</button>
         </div>
       </div>`;
-    });
+          });
 
-    html += `</div></div>`;
-  });
+          html += `</div></div>`;
+        });
 
-  container.innerHTML = html;
-}
-
-function render() { renderStats(); renderLog(); }
-
-// ── ACTIONS ──────────────────────────────────────────────
-function addEntry() {
-  const dateVal  = document.getElementById('input-date').value;
-  const hoursVal = document.getElementById('input-hours').value;
-  const noteVal  = document.getElementById('input-note').value.trim();
-
-  if (!dateVal) { toast('Please pick a date'); return; }
-  const h = parseFloat(hoursVal);
-  if (isNaN(h) || h < 0 || h > 24) { toast('Enter valid hours (0–24)'); return; }
-
-  // Check duplicate date
-  const exists = entries.find(e => e.date === dateVal);
-  if (exists) {
-    if (!confirm(`An entry for ${dateVal} already exists (${exists.hours}h). Replace it?`)) return;
-    entries = entries.filter(e => e.date !== dateVal);
-  }
-
-  entries.push({
-    id:    Date.now().toString(),
-    date:  dateVal,
-    hours: Math.round(h * 10) / 10,
-    note:  noteVal
-  });
-
-  save(STORE_ENTRIES, entries);
-  document.getElementById('input-hours').value = '';
-  document.getElementById('input-note').value  = '';
-  toast('Entry saved ✓');
-  render();
-}
-
-function deleteEntry(id) {
-  if (!confirm('Delete this entry?')) return;
-  entries = entries.filter(e => e.id !== id);
-  save(STORE_ENTRIES, entries);
-  render();
-}
-
-function switchTab(tab, el) {
-  currentTab = tab;
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  renderLog();
-}
-
-// ── SETTINGS ─────────────────────────────────────────────
-function openSettings() {
-  document.getElementById('s-wage').value     = settings.wage || '';
-  document.getElementById('s-currency').value = settings.currency || '$';
-  document.getElementById('settings-modal').classList.add('open');
-}
-function closeSettings() { document.getElementById('settings-modal').classList.remove('open'); }
-function saveSettings() {
-  const w = parseFloat(document.getElementById('s-wage').value);
-  settings.wage     = isNaN(w) ? 0 : Math.round(w * 100) / 100;
-  settings.currency = document.getElementById('s-currency').value.trim() || '$';
-  save(STORE_SETTINGS, settings);
-  closeSettings();
-  render();
-  toast('Settings saved ✓');
-}
-
-// Close modal on overlay click
-document.getElementById('settings-modal').addEventListener('click', function(e) {
-  if (e.target === this) closeSettings();
-});
-
-// ── TOAST ─────────────────────────────────────────────────
-let toastTimer;
-function toast(msg) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 2400);
-}
-
-// ── UTILS ─────────────────────────────────────────────────
-function escHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-// ── EXPORT ───────────────────────────────────────────────
-function downloadFile(content, filename, mime) {
-  const blob = new Blob([content], { type: mime });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href = url; a.download = filename;
-  document.body.appendChild(a); a.click();
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-
-function exportJSON() {
-  if (!entries.length) { toast('No entries to export'); return; }
-  const payload = { version: 1, exportedAt: new Date().toISOString(), settings, entries };
-  const date = today().replace(/-/g,'');
-  downloadFile(JSON.stringify(payload, null, 2), `hourlog_backup_${date}.json`, 'application/json');
-  toast('JSON backup downloaded ✓');
-}
-
-function exportCSV() {
-  if (!entries.length) { toast('No entries to export'); return; }
-  const sorted = [...entries].sort((a,b) => a.date.localeCompare(b.date));
-  const wage   = settings.wage || 0;
-  const curr   = settings.currency || '$';
-  const rows   = [['Date','Day','Hours','Note', wage ? `Pay (${curr})` : 'Pay']];
-  sorted.forEach(e => {
-    const d = parseLocalDate(e.date);
-    rows.push([
-      e.date,
-      DAYS[d.getDay()],
-      e.hours.toFixed(1),
-      e.note || '',
-      wage ? (e.hours * wage).toFixed(2) : ''
-    ]);
-  });
-  // Totals row
-  const totalHrs = sorted.reduce((s,e) => s + e.hours, 0);
-  rows.push(['','TOTAL', totalHrs.toFixed(1), '', wage ? (totalHrs * wage).toFixed(2) : '']);
-
-  const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\r\n');
-  const date = today().replace(/-/g,'');
-  downloadFile('\uFEFF' + csv, `hourlog_export_${date}.csv`, 'text/csv;charset=utf-8');
-  toast('CSV downloaded ✓');
-}
-
-// ── IMPORT ───────────────────────────────────────────────
-let importMode    = 'merge'; // 'merge' | 'replace'
-let pendingImport = null;    // parsed entries array ready to apply
-
-function openImport() {
-  pendingImport = null;
-  document.getElementById('import-file-input').value = '';
-  document.getElementById('import-preview').classList.remove('visible');
-  document.getElementById('import-preview').innerHTML = '';
-  document.getElementById('conflict-badge').style.display = 'none';
-  const btn = document.getElementById('import-confirm-btn');
-  btn.disabled = true; btn.style.opacity = '0.4'; btn.style.cursor = 'not-allowed';
-  document.getElementById('import-modal').classList.add('open');
-}
-function closeImport() { document.getElementById('import-modal').classList.remove('open'); }
-
-function setImportMode(mode, el) {
-  importMode = mode;
-  document.querySelectorAll('.import-mode-tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  if (pendingImport) showPreview(pendingImport);
-}
-
-// File input & drag-drop
-document.addEventListener('DOMContentLoaded', () => {
-  const dz   = document.getElementById('import-dropzone');
-  const inp  = document.getElementById('import-file-input');
-
-  inp.addEventListener('change', () => { if (inp.files[0]) readImportFile(inp.files[0]); });
-
-  dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('drag-over'); });
-  dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
-  dz.addEventListener('drop', e => {
-    e.preventDefault(); dz.classList.remove('drag-over');
-    const f = e.dataTransfer.files[0];
-    if (f) readImportFile(f);
-  });
-
-  document.getElementById('import-modal').addEventListener('click', function(e) {
-    if (e.target === this) closeImport();
-  });
-});
-
-function readImportFile(file) {
-  const ext = file.name.split('.').pop().toLowerCase();
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      let parsed;
-      if (ext === 'json') {
-        parsed = parseImportJSON(e.target.result);
-      } else if (ext === 'csv') {
-        parsed = parseImportCSV(e.target.result);
-      } else {
-        toast('Only .json or .csv files are supported'); return;
+        container.innerHTML = html;
       }
-      pendingImport = parsed;
-      showPreview(parsed);
-    } catch(err) {
-      toast('Could not read file: ' + err.message);
-    }
-  };
-  reader.readAsText(file, 'utf-8');
-}
 
-function parseImportJSON(text) {
-  const data = JSON.parse(text);
-  // Support both raw array and { entries: [...] } wrapped format
-  const arr = Array.isArray(data) ? data : (data.entries || []);
-  if (!Array.isArray(arr)) throw new Error('No entries array found');
-  return arr.map(normaliseEntry);
-}
+      function render() {
+        renderStats();
+        renderLog();
+      }
 
-function parseImportCSV(text) {
-  // Strip BOM
-  const clean = text.replace(/^\uFEFF/, '');
-  const lines = clean.split(/\r?\n/).filter(l => l.trim());
-  if (lines.length < 2) throw new Error('CSV appears empty');
+      // ── ACTIONS ──────────────────────────────────────────────
+      function addEntry() {
+        const dateVal = document.getElementById("input-date").value;
+        const hoursVal = document.getElementById("input-hours").value;
 
-  const header = parseCsvRow(lines[0]).map(h => h.toLowerCase().trim());
-  const dateIdx  = header.findIndex(h => h === 'date');
-  const hoursIdx = header.findIndex(h => h.includes('hour'));
-  const noteIdx  = header.findIndex(h => h === 'note');
-  if (dateIdx < 0 || hoursIdx < 0) throw new Error('CSV must have "Date" and "Hours" columns');
+        if (!dateVal) {
+          toast("Please pick a date");
+          return;
+        }
+        const h = parseFloat(hoursVal);
+        if (isNaN(h) || h < 0 || h > 24) {
+          toast("Enter valid hours (0–24)");
+          return;
+        }
 
-  const result = [];
-  for (let i = 1; i < lines.length; i++) {
-    const cols = parseCsvRow(lines[i]);
-    const dateVal = (cols[dateIdx] || '').trim();
-    const hrsVal  = parseFloat(cols[hoursIdx] || '');
-    if (!dateVal || isNaN(hrsVal)) continue;
-    if (dateVal.toLowerCase() === 'total' || dateVal === '') continue;
-    result.push(normaliseEntry({
-      date:  dateVal,
-      hours: hrsVal,
-      note:  noteIdx >= 0 ? (cols[noteIdx] || '').trim() : ''
-    }));
-  }
-  return result;
-}
+        // Check duplicate date
+        const exists = entries.find((e) => e.date === dateVal);
+        if (exists) {
+          if (!confirm(`An entry for ${dateVal} already exists (${exists.hours}h). Replace it?`)) return;
+          entries = entries.filter((e) => e.date !== dateVal);
+        }
 
-function parseCsvRow(row) {
-  const result = []; let cur = ''; let inQ = false;
-  for (let i = 0; i < row.length; i++) {
-    const c = row[i];
-    if (c === '"') { if (inQ && row[i+1] === '"') { cur += '"'; i++; } else inQ = !inQ; }
-    else if (c === ',' && !inQ) { result.push(cur); cur = ''; }
-    else cur += c;
-  }
-  result.push(cur);
-  return result;
-}
+        entries.push({
+          id: Date.now().toString(),
+          date: dateVal,
+          hours: Math.round(h * 10) / 10,
+          note: "",
+        });
 
-function normaliseEntry(e) {
-  // Ensure date is YYYY-MM-DD
-  let date = (e.date || '').trim();
-  // Convert DD/MM/YYYY → YYYY-MM-DD if needed
-  if (/^\d{2}\/\d{2}\/\d{4}$/.test(date)) {
-    const [d,m,y] = date.split('/');
-    date = `${y}-${m}-${d}`;
-  }
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error(`Invalid date format: ${date}`);
-  const hours = Math.round(parseFloat(e.hours) * 10) / 10;
-  if (isNaN(hours)) throw new Error(`Invalid hours for ${date}`);
-  return { id: e.id || Date.now().toString() + Math.random(), date, hours, note: e.note || '' };
-}
+        save(STORE_ENTRIES, entries);
+        document.getElementById("input-hours").value = "";
+        toast("Entry saved ✓");
+        render();
+      }
 
-function showPreview(imported) {
-  const preview = document.getElementById('import-preview');
-  const badge   = document.getElementById('conflict-badge');
-  const btn     = document.getElementById('import-confirm-btn');
+      function deleteEntry(id) {
+        if (!confirm("Delete this entry?")) return;
+        entries = entries.filter((e) => e.id !== id);
+        save(STORE_ENTRIES, entries);
+        render();
+      }
 
-  const existingDates = new Set(entries.map(e => e.date));
-  const conflicts = imported.filter(e => existingDates.has(e.date));
-  const newItems  = imported.filter(e => !existingDates.has(e.date));
+      function switchTab(tab, el) {
+        currentTab = tab;
+        document.querySelectorAll(".tab").forEach((t) => t.classList.remove("active"));
+        el.classList.add("active");
+        renderLog();
+      }
 
-  let html = '';
-  imported.slice(0, 40).forEach(e => {
-    const isConflict = existingDates.has(e.date);
-    const cls = isConflict ? 'preview-row preview-conflict' : 'preview-row preview-new';
-    const flag = isConflict ? (importMode === 'merge' ? ' ⚠ skip' : ' ⚠ overwrite') : ' ✓ new';
-    html += `<div class="${cls}"><span>${e.date} — ${DAYS[parseLocalDate(e.date).getDay()].slice(0,3)}</span><span>${e.hours.toFixed(1)}h${flag}</span></div>`;
-  });
-  if (imported.length > 40) html += `<div class="preview-row" style="color:var(--muted)">… and ${imported.length-40} more</div>`;
+      // ── SETTINGS ─────────────────────────────────────────────
+      function openSettings() {
+        document.getElementById("s-wage").value = settings.wage || "";
+        document.getElementById("s-currency").value = settings.currency || "$";
+        document.getElementById("settings-modal").classList.add("open");
+      }
+      function closeSettings() {
+        document.getElementById("settings-modal").classList.remove("open");
+      }
+      function saveSettings() {
+        const w = parseFloat(document.getElementById("s-wage").value);
+        settings.wage = isNaN(w) ? 0 : Math.round(w * 100) / 100;
+        settings.currency = document.getElementById("s-currency").value.trim() || "$";
+        save(STORE_SETTINGS, settings);
+        closeSettings();
+        render();
+        toast("Settings saved ✓");
+      }
 
-  preview.innerHTML = html;
-  preview.classList.add('visible');
+      // Close modal on overlay click
+      document.getElementById("settings-modal").addEventListener("click", function (e) {
+        if (e.target === this) closeSettings();
+      });
 
-  const total = imported.length;
-  if (conflicts.length) {
-    const action = importMode === 'merge' ? `${conflicts.length} skipped (already exist)` : `${conflicts.length} overwritten`;
-    badge.innerHTML = `<span class="conflict-badge has-conflicts">⚠ ${conflicts.length} conflict${conflicts.length>1?'s':''} · ${action}</span>`;
-  } else {
-    badge.innerHTML = `<span class="conflict-badge no-conflicts">✓ ${total} entr${total>1?'ies':'y'} — no conflicts</span>`;
-  }
-  badge.style.display = 'block';
+      // ── TOAST ─────────────────────────────────────────────────
+      let toastTimer;
+      function toast(msg) {
+        const el = document.getElementById("toast");
+        el.textContent = msg;
+        el.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.classList.remove("show"), 2400);
+      }
 
-  btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer';
-}
+      // ── UTILS ─────────────────────────────────────────────────
+      function escHtml(s) {
+        return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+      }
 
-function confirmImport() {
-  if (!pendingImport) return;
-  const existingDates = new Set(entries.map(e => e.date));
+      // ── EXPORT ───────────────────────────────────────────────
+      function downloadFile(content, filename, mime) {
+        const blob = new Blob([content], { type: mime });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }
 
-  if (importMode === 'replace') {
-    if (!confirm(`This will DELETE all ${entries.length} existing entries and replace with ${pendingImport.length} imported entries. Are you sure?`)) return;
-    entries = pendingImport;
-  } else {
-    // Merge: skip conflicts
-    const toAdd = pendingImport.filter(e => !existingDates.has(e.date));
-    entries = [...entries, ...toAdd];
-  }
+      function exportJSON() {
+        if (!entries.length) {
+          toast("No entries to export");
+          return;
+        }
+        const payload = { version: 1, exportedAt: new Date().toISOString(), settings, entries };
+        const date = today().replace(/-/g, "");
+        downloadFile(JSON.stringify(payload, null, 2), `hourlog_backup_${date}.json`, "application/json");
+        toast("JSON backup downloaded ✓");
+      }
 
-  save(STORE_ENTRIES, entries);
-  closeImport();
-  render();
-  const count = importMode === 'replace' ? pendingImport.length : pendingImport.filter(e => !existingDates.has(e.date)).length;
-  toast(`Imported ${count} entr${count!==1?'ies':'y'} ✓`);
-}
+      function exportCSV() {
+        if (!entries.length) {
+          toast("No entries to export");
+          return;
+        }
+        const sorted = [...entries].sort((a, b) => a.date.localeCompare(b.date));
+        const wage = settings.wage || 0;
+        const curr = settings.currency || "$";
+        const rows = [["Date", "Day", "Hours", "Note", wage ? `Pay (${curr})` : "Pay"]];
+        sorted.forEach((e) => {
+          const d = parseLocalDate(e.date);
+          rows.push([
+            e.date,
+            DAYS[d.getDay()],
+            e.hours.toFixed(1),
+            e.note || "",
+            wage ? (e.hours * wage).toFixed(2) : "",
+          ]);
+        });
+        // Totals row
+        const totalHrs = sorted.reduce((s, e) => s + e.hours, 0);
+        rows.push(["", "TOTAL", totalHrs.toFixed(1), "", wage ? (totalHrs * wage).toFixed(2) : ""]);
 
-// ── CLEAR ALL ────────────────────────────────────────────
-function clearAllData() {
-  if (!entries.length) { toast('Nothing to clear'); return; }
-  if (!confirm(`Delete all ${entries.length} entries? This cannot be undone.\n\nTip: Export a backup first!`)) return;
-  entries = [];
-  save(STORE_ENTRIES, entries);
-  render();
-  toast('All data cleared');
-}
+        const csv = rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\r\n");
+        const date = today().replace(/-/g, "");
+        downloadFile("\uFEFF" + csv, `hourlog_export_${date}.csv`, "text/csv;charset=utf-8");
+        toast("CSV downloaded ✓");
+      }
 
-// ── INIT ──────────────────────────────────────────────────
-document.getElementById('input-date').value = today();
-render();
-</script>
-</body>
+      // ── IMPORT ───────────────────────────────────────────────
+      let importMode = "merge"; // 'merge' | 'replace'
+      let pendingImport = null; // parsed entries array ready to apply
+
+      function openImport() {
+        pendingImport = null;
+        document.getElementById("import-file-input").value = "";
+        document.getElementById("import-preview").classList.remove("visible");
+        document.getElementById("import-preview").innerHTML = "";
+        document.getElementById("conflict-badge").style.display = "none";
+        const btn = document.getElementById("import-confirm-btn");
+        btn.disabled = true;
+        btn.style.opacity = "0.4";
+        btn.style.cursor = "not-allowed";
+        document.getElementById("import-modal").classList.add("open");
+      }
+      function closeImport() {
+        document.getElementById("import-modal").classList.remove("open");
+      }
+
+      function setImportMode(mode, el) {
+        importMode = mode;
+        document.querySelectorAll(".import-mode-tab").forEach((t) => t.classList.remove("active"));
+        el.classList.add("active");
+        if (pendingImport) showPreview(pendingImport);
+      }
+
+      // File input & drag-drop
+      document.addEventListener("DOMContentLoaded", () => {
+        const dz = document.getElementById("import-dropzone");
+        const inp = document.getElementById("import-file-input");
+
+        inp.addEventListener("change", () => {
+          if (inp.files[0]) readImportFile(inp.files[0]);
+        });
+
+        dz.addEventListener("dragover", (e) => {
+          e.preventDefault();
+          dz.classList.add("drag-over");
+        });
+        dz.addEventListener("dragleave", () => dz.classList.remove("drag-over"));
+        dz.addEventListener("drop", (e) => {
+          e.preventDefault();
+          dz.classList.remove("drag-over");
+          const f = e.dataTransfer.files[0];
+          if (f) readImportFile(f);
+        });
+
+        document.getElementById("import-modal").addEventListener("click", function (e) {
+          if (e.target === this) closeImport();
+        });
+      });
+
+      function readImportFile(file) {
+        const ext = file.name.split(".").pop().toLowerCase();
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            let parsed;
+            if (ext === "json") {
+              parsed = parseImportJSON(e.target.result);
+            } else if (ext === "csv") {
+              parsed = parseImportCSV(e.target.result);
+            } else {
+              toast("Only .json or .csv files are supported");
+              return;
+            }
+            pendingImport = parsed;
+            showPreview(parsed);
+          } catch (err) {
+            toast("Could not read file: " + err.message);
+          }
+        };
+        reader.readAsText(file, "utf-8");
+      }
+
+      function parseImportJSON(text) {
+        const data = JSON.parse(text);
+        // Support both raw array and { entries: [...] } wrapped format
+        const arr = Array.isArray(data) ? data : data.entries || [];
+        if (!Array.isArray(arr)) throw new Error("No entries array found");
+        return arr.map(normaliseEntry);
+      }
+
+      function parseImportCSV(text) {
+        // Strip BOM
+        const clean = text.replace(/^\uFEFF/, "");
+        const lines = clean.split(/\r?\n/).filter((l) => l.trim());
+        if (lines.length < 2) throw new Error("CSV appears empty");
+
+        const header = parseCsvRow(lines[0]).map((h) => h.toLowerCase().trim());
+        const dateIdx = header.findIndex((h) => h === "date");
+        const hoursIdx = header.findIndex((h) => h.includes("hour"));
+        const noteIdx = header.findIndex((h) => h === "note");
+        if (dateIdx < 0 || hoursIdx < 0) throw new Error('CSV must have "Date" and "Hours" columns');
+
+        const result = [];
+        for (let i = 1; i < lines.length; i++) {
+          const cols = parseCsvRow(lines[i]);
+          const dateVal = (cols[dateIdx] || "").trim();
+          const hrsVal = parseFloat(cols[hoursIdx] || "");
+          if (!dateVal || isNaN(hrsVal)) continue;
+          if (dateVal.toLowerCase() === "total" || dateVal === "") continue;
+          result.push(
+            normaliseEntry({
+              date: dateVal,
+              hours: hrsVal,
+              note: noteIdx >= 0 ? (cols[noteIdx] || "").trim() : "",
+            }),
+          );
+        }
+        return result;
+      }
+
+      function parseCsvRow(row) {
+        const result = [];
+        let cur = "";
+        let inQ = false;
+        for (let i = 0; i < row.length; i++) {
+          const c = row[i];
+          if (c === '"') {
+            if (inQ && row[i + 1] === '"') {
+              cur += '"';
+              i++;
+            } else inQ = !inQ;
+          } else if (c === "," && !inQ) {
+            result.push(cur);
+            cur = "";
+          } else cur += c;
+        }
+        result.push(cur);
+        return result;
+      }
+
+      function normaliseEntry(e) {
+        // Ensure date is YYYY-MM-DD
+        let date = (e.date || "").trim();
+        // Convert DD/MM/YYYY → YYYY-MM-DD if needed
+        if (/^\d{2}\/\d{2}\/\d{4}$/.test(date)) {
+          const [d, m, y] = date.split("/");
+          date = `${y}-${m}-${d}`;
+        }
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error(`Invalid date format: ${date}`);
+        const hours = Math.round(parseFloat(e.hours) * 10) / 10;
+        if (isNaN(hours)) throw new Error(`Invalid hours for ${date}`);
+        return { id: e.id || Date.now().toString() + Math.random(), date, hours, note: e.note || "" };
+      }
+
+      function showPreview(imported) {
+        const preview = document.getElementById("import-preview");
+        const badge = document.getElementById("conflict-badge");
+        const btn = document.getElementById("import-confirm-btn");
+
+        const existingDates = new Set(entries.map((e) => e.date));
+        const conflicts = imported.filter((e) => existingDates.has(e.date));
+        const newItems = imported.filter((e) => !existingDates.has(e.date));
+
+        let html = "";
+        imported.slice(0, 40).forEach((e) => {
+          const isConflict = existingDates.has(e.date);
+          const cls = isConflict ? "preview-row preview-conflict" : "preview-row preview-new";
+          const flag = isConflict ? (importMode === "merge" ? " ⚠ skip" : " ⚠ overwrite") : " ✓ new";
+          html += `<div class="${cls}"><span>${e.date} — ${DAYS[parseLocalDate(e.date).getDay()].slice(0, 3)}</span><span>${e.hours.toFixed(1)}h${flag}</span></div>`;
+        });
+        if (imported.length > 40)
+          html += `<div class="preview-row" style="color:var(--muted)">… and ${imported.length - 40} more</div>`;
+
+        preview.innerHTML = html;
+        preview.classList.add("visible");
+
+        const total = imported.length;
+        if (conflicts.length) {
+          const action =
+            importMode === "merge" ? `${conflicts.length} skipped (already exist)` : `${conflicts.length} overwritten`;
+          badge.innerHTML = `<span class="conflict-badge has-conflicts">⚠ ${conflicts.length} conflict${conflicts.length > 1 ? "s" : ""} · ${action}</span>`;
+        } else {
+          badge.innerHTML = `<span class="conflict-badge no-conflicts">✓ ${total} entr${total > 1 ? "ies" : "y"} — no conflicts</span>`;
+        }
+        badge.style.display = "block";
+
+        btn.disabled = false;
+        btn.style.opacity = "1";
+        btn.style.cursor = "pointer";
+      }
+
+      function confirmImport() {
+        if (!pendingImport) return;
+        const existingDates = new Set(entries.map((e) => e.date));
+
+        if (importMode === "replace") {
+          if (
+            !confirm(
+              `This will DELETE all ${entries.length} existing entries and replace with ${pendingImport.length} imported entries. Are you sure?`,
+            )
+          )
+            return;
+          entries = pendingImport;
+        } else {
+          // Merge: skip conflicts
+          const toAdd = pendingImport.filter((e) => !existingDates.has(e.date));
+          entries = [...entries, ...toAdd];
+        }
+
+        save(STORE_ENTRIES, entries);
+        closeImport();
+        render();
+        const count =
+          importMode === "replace"
+            ? pendingImport.length
+            : pendingImport.filter((e) => !existingDates.has(e.date)).length;
+        toast(`Imported ${count} entr${count !== 1 ? "ies" : "y"} ✓`);
+      }
+
+      // ── CLEAR ALL ────────────────────────────────────────────
+      function clearAllData() {
+        if (!entries.length) {
+          toast("Nothing to clear");
+          return;
+        }
+        if (!confirm(`Delete all ${entries.length} entries? This cannot be undone.\n\nTip: Export a backup first!`))
+          return;
+        entries = [];
+        save(STORE_ENTRIES, entries);
+        render();
+        toast("All data cleared");
+      }
+
+      // ── PWA ───────────────────────────────────────────────────
+      // Show iOS "Add to Home Screen" banner if:
+      // - running in Mobile Safari (not already installed as PWA)
+      // - user hasn't dismissed it before
+      function isIOS() {
+        return /iphone|ipad|ipod/i.test(navigator.userAgent);
+      }
+      function isInStandaloneMode() {
+        return window.navigator.standalone === true;
+      }
+      function showPWABanner() {
+        if (isIOS() && !isInStandaloneMode() && !localStorage.getItem('pwa_dismissed')) {
+          document.getElementById('pwa-banner').classList.remove('hidden');
+        }
+      }
+      function dismissPWA() {
+        document.getElementById('pwa-banner').classList.add('hidden');
+        localStorage.setItem('pwa_dismissed', '1');
+      }
+
+      // Register inline Service Worker for offline support
+      if ('serviceWorker' in navigator) {
+        const swCode = `
+          const CACHE = 'hourlog-v1';
+          const ASSETS = [self.location.href];
+          self.addEventListener('install', e => {
+            e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
+            self.skipWaiting();
+          });
+          self.addEventListener('activate', e => {
+            e.waitUntil(caches.keys().then(keys =>
+              Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+            ));
+            self.clients.claim();
+          });
+          self.addEventListener('fetch', e => {
+            e.respondWith(
+              caches.match(e.request).then(cached => cached || fetch(e.request).catch(() => cached))
+            );
+          });
+        `;
+        const swBlob = new Blob([swCode], { type: 'application/javascript' });
+        const swUrl  = URL.createObjectURL(swBlob);
+        navigator.serviceWorker.register(swUrl).catch(() => {});
+      }
+
+      // ── INIT ──────────────────────────────────────────────────
+      document.getElementById("input-date").value = today();
+      render();
+      showPWABanner();
+    </script>
+  </body>
 </html>
