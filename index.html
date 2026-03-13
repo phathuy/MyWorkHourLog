@@ -340,6 +340,14 @@
     <button class="add-btn" onclick="addEntry()">+ Add Entry</button>
   </div>
 
+  <!-- Log History -->
+  <div class="section-label">History</div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('week', this)">By Week</div>
+    <div class="tab"       onclick="switchTab('month', this)">By Month</div>
+  </div>
+  <div id="log-container"></div>
+
   <!-- Export / Import -->
   <div class="section-label">Export & Import</div>
   <div class="io-card">
@@ -360,13 +368,6 @@
     <div class="io-note">JSON = full backup (restores all data) · CSV = open in Excel/Sheets</div>
   </div>
 
-  <!-- Log History -->
-  <div class="section-label">History</div>
-  <div class="tabs">
-    <div class="tab active" onclick="switchTab('week', this)">By Week</div>
-    <div class="tab"       onclick="switchTab('month', this)">By Month</div>
-  </div>
-  <div id="log-container"></div>
 </main>
 
 <!-- Import Modal -->
