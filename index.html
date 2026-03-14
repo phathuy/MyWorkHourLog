@@ -2,8 +2,27 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>HourLog — Work Hours Tracker</title>
+
+    <!-- PWA: core -->
+    <meta name="application-name" content="HourLog" />
+    <meta name="description" content="Track daily work hours, weekly & monthly totals, and pay." />
+    <meta name="theme-color" content="#0e0e10" id="meta-theme-color" />
+
+    <!-- PWA: Apple / iPhone Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="HourLog" />
+
+    <!-- Apple touch icon (180×180 SVG encoded inline — no external file needed) -->
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='38' fill='%230e0e10'/%3E%3Ccircle cx='90' cy='82' r='38' stroke='%23c8f135' stroke-width='8' fill='none'/%3E%3Cline x1='90' y1='82' x2='90' y2='56' stroke='%23c8f135' stroke-width='7' stroke-linecap='round'/%3E%3Cline x1='90' y1='82' x2='112' y2='96' stroke='%23c8f135' stroke-width='5' stroke-linecap='round'/%3E%3Ccircle cx='90' cy='82' r='4' fill='%23c8f135'/%3E%3Cline x1='56' y1='136' x2='124' y2='136' stroke='%23c8f135' stroke-width='6' stroke-linecap='round'/%3E%3C/svg%3E" />
+
+    <!-- Splash screen background colour for iOS launch -->
+    <meta name="msapplication-TileColor" content="#0e0e10" />
+
+    <!-- Web App Manifest (inline data URI — no separate file needed) -->
+    <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22HourLog%20%E2%80%94%20Work%20Hours%20Tracker%22%2C%22short_name%22%3A%22HourLog%22%2C%22description%22%3A%22Track%20daily%20work%20hours%2C%20weekly%20%26%20monthly%20totals%2C%20and%20pay.%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22orientation%22%3A%22portrait%22%2C%22background_color%22%3A%22%230e0e10%22%2C%22theme_color%22%3A%22%230e0e10%22%7D" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
       href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap"
@@ -97,7 +116,10 @@
         color: var(--text);
         font-family: var(--sans);
         min-height: 100vh;
-        padding-bottom: 100px;
+        min-height: 100dvh;
+        padding-bottom: calc(100px + env(safe-area-inset-bottom));
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
       }
 
       /* HEADER */
@@ -107,8 +129,12 @@
         z-index: 100;
         background: var(--header-bg);
         backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
         border-bottom: 1px solid var(--border);
         padding: 16px 20px;
+        padding-top: max(16px, calc(env(safe-area-inset-top) + 10px));
+        padding-left: max(20px, env(safe-area-inset-left));
+        padding-right: max(20px, env(safe-area-inset-right));
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -769,6 +795,47 @@
           grid-template-columns: 1fr 1fr;
         }
       }
+
+      /* PWA INSTALL BANNER */
+      .pwa-banner {
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        z-index: 500;
+        background: var(--surface);
+        border-top: 1px solid var(--border);
+        padding: 14px 18px;
+        padding-bottom: max(14px, env(safe-area-inset-bottom));
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        animation: slideUpBanner 0.3s ease;
+        box-shadow: 0 -4px 24px rgba(0,0,0,0.18);
+      }
+      @keyframes slideUpBanner {
+        from { transform: translateY(100%); }
+        to   { transform: translateY(0); }
+      }
+      .pwa-banner.hidden { display: none; }
+      .pwa-banner-icon { font-size: 2rem; flex-shrink: 0; line-height: 1; }
+      .pwa-banner-text { flex: 1; }
+      .pwa-banner-text strong { display: block; font-size: 0.9rem; margin-bottom: 3px; }
+      .pwa-banner-text span {
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        color: var(--muted);
+        line-height: 1.4;
+      }
+      .pwa-banner-close {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        color: var(--muted);
+        border-radius: 8px;
+        padding: 8px 10px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        flex-shrink: 0;
+        line-height: 1;
+      }
     </style>
   </head>
   <body>
@@ -913,6 +980,16 @@
           <button class="btn-save" onclick="saveSettings()">Save</button>
         </div>
       </div>
+    </div>
+
+    <!-- PWA Install Banner (iOS Safari only) -->
+    <div class="pwa-banner hidden" id="pwa-banner">
+      <div class="pwa-banner-icon">⏱</div>
+      <div class="pwa-banner-text">
+        <strong>Add HourLog to Home Screen</strong>
+        <span>Tap <b>Share</b> then <b>Add to Home Screen</b> for the full app experience</span>
+      </div>
+      <button class="pwa-banner-close" onclick="dismissPwaBanner()">✕</button>
     </div>
 
     <!-- Toast -->
@@ -1643,6 +1720,79 @@
       document.getElementById("input-date").value = today();
       updateWeekday(today());
       render();
+
+      // ── PWA ───────────────────────────────────────────────────
+      // Update <meta name="theme-color"> when theme changes so the
+      // Safari status bar matches the app background
+      function syncThemeColor() {
+        const isLight = document.documentElement.classList.contains("light");
+        document.getElementById("meta-theme-color").setAttribute("content", isLight ? "#f0efe9" : "#0e0e10");
+      }
+
+      // Patch applyTheme to also sync the meta tag
+      const _applyTheme = applyTheme;
+      // Already defined above; extend with a post-call
+      window.addEventListener("DOMContentLoaded", syncThemeColor);
+      document.documentElement.addEventListener("classChange", syncThemeColor);
+
+      // Simpler: just call it after any toggle
+      const origToggle = toggleTheme;
+      // Override toggleTheme to also update meta-theme-color
+      function toggleTheme() {
+        const current = document.documentElement.classList.contains("light") ? "light" : "dark";
+        const next = current === "light" ? "dark" : "light";
+        localStorage.setItem(STORE_THEME, next);
+        applyTheme(next);
+        syncThemeColor();
+      }
+      syncThemeColor();
+
+      // iOS "Add to Home Screen" banner
+      function isIOS() {
+        return /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+      }
+      function isStandalone() {
+        return window.navigator.standalone === true;
+      }
+      function dismissPwaBanner() {
+        document.getElementById("pwa-banner").classList.add("hidden");
+        localStorage.setItem("hourlog_pwa_dismissed", "1");
+      }
+      if (isIOS() && !isStandalone() && !localStorage.getItem("hourlog_pwa_dismissed")) {
+        // Delay slightly so the page renders first
+        setTimeout(() => {
+          document.getElementById("pwa-banner").classList.remove("hidden");
+        }, 1200);
+      }
+
+      // Service Worker — caches the page for offline use
+      if ("serviceWorker" in navigator) {
+        const swSource = `
+          const CACHE = "hourlog-v1";
+          self.addEventListener("install", e => {
+            e.waitUntil(
+              caches.open(CACHE).then(c => c.add(self.location.href))
+            );
+            self.skipWaiting();
+          });
+          self.addEventListener("activate", e => {
+            e.waitUntil(
+              caches.keys().then(keys =>
+                Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+              )
+            );
+            self.clients.claim();
+          });
+          self.addEventListener("fetch", e => {
+            e.respondWith(
+              caches.match(e.request).then(cached => cached || fetch(e.request))
+            );
+          });
+        `;
+        const swBlob = new Blob([swSource], { type: "application/javascript" });
+        const swURL  = URL.createObjectURL(swBlob);
+        navigator.serviceWorker.register(swURL).catch(() => {});
+      }
     </script>
   </body>
 </html>
