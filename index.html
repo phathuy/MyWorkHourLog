@@ -300,10 +300,10 @@
       }
       .stat-chip .chip-val {
         font-size: 1.55rem;
-        font-weight: 700;
+        font-weight: 300;
         letter-spacing: -0.03em;
         line-height: 1;
-        font-family: 'Space Mono', monospace;
+        font-family: var(--mono);
       }
       .stat-chip.accent .chip-val {
         color: var(--accent);
@@ -360,7 +360,7 @@
         user-select: none;
         transition: background 0.15s;
       }
-      .group-header:hover { background: #28282f; }
+      .group-header:hover { background: color-mix(in srgb, var(--text) 6%, var(--surface2)); }
       .group.expanded .group-header {
         border-radius: 10px 10px 0 0;
         border-bottom: none;
@@ -488,6 +488,10 @@
       }
       .modal-overlay.open {
         display: flex;
+      }
+      /* Import modal sits above settings modal */
+      #import-modal {
+        z-index: 300;
       }
       .modal {
         background: var(--surface);
@@ -1349,10 +1353,14 @@
         btn.disabled = true;
         btn.style.opacity = "0.4";
         btn.style.cursor = "not-allowed";
+        // Hide settings so import modal is fully visible
+        document.getElementById("settings-modal").classList.remove("open");
         document.getElementById("import-modal").classList.add("open");
       }
       function closeImport() {
         document.getElementById("import-modal").classList.remove("open");
+        // Reopen settings so user can continue where they left off
+        document.getElementById("settings-modal").classList.add("open");
       }
 
       function setImportMode(mode, el) {
@@ -1539,7 +1547,8 @@
         }
 
         save(STORE_ENTRIES, entries);
-        closeImport();
+        document.getElementById("import-modal").classList.remove("open");
+        document.getElementById("settings-modal").classList.add("open");
         render();
         const count =
           importMode === "replace"
