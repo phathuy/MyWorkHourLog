@@ -978,7 +978,19 @@
 
         <hr class="settings-divider" />
 
-        <!-- Export / Import -->
+        <!-- Google Drive Backup -->
+        <div class="settings-section-label">📁 Google Drive Backup</div>
+        <div class="field">
+          <label>CLIENT ID <span class="field-hint">— from Google Cloud Console</span></label>
+          <input type="text" id="s-gd-client-id" placeholder="xxxxxxxxxx.apps.googleusercontent.com" />
+        </div>
+        <div class="jb-btn-row">
+          <button class="jb-action-btn push-btn" onclick="gdriveSave()">⬆ Save to Drive</button>
+          <button class="jb-action-btn pull-btn" onclick="gdriveLoad()">⬇ Load from Drive</button>
+        </div>
+        <div id="gd-status" class="jb-status"></div>
+
+        <hr class="settings-divider" />
         <div class="settings-section-label">Export & Import</div>
         <div class="io-grid">
           <button class="io-btn" onclick="exportJSON()"><span class="io-icon">⬇</span>JSON Backup</button>
@@ -1248,8 +1260,11 @@
         document.getElementById("s-currency").value = settings.currency || "$";
         document.getElementById("s-jb-key").value = settings.jbKey || "";
         document.getElementById("s-jb-bin").value = settings.jbBin || "";
+        document.getElementById("s-gd-client-id").value = settings.gdClientId || "";
         document.getElementById("jb-status").textContent = "";
         document.getElementById("jb-status").className = "jb-status";
+        document.getElementById("gd-status").textContent = "";
+        document.getElementById("gd-status").className = "jb-status";
         document.getElementById("settings-modal").classList.add("open");
       }
       function closeSettings() {
@@ -1257,10 +1272,11 @@
       }
       function saveSettings() {
         const w = parseFloat(document.getElementById("s-wage").value);
-        settings.wage     = isNaN(w) ? 0 : Math.round(w * 100) / 100;
-        settings.currency = document.getElementById("s-currency").value.trim() || "$";
-        settings.jbKey    = document.getElementById("s-jb-key").value.trim();
-        settings.jbBin    = document.getElementById("s-jb-bin").value.trim();
+        settings.wage       = isNaN(w) ? 0 : Math.round(w * 100) / 100;
+        settings.currency   = document.getElementById("s-currency").value.trim() || "$";
+        settings.jbKey      = document.getElementById("s-jb-key").value.trim();
+        settings.jbBin      = document.getElementById("s-jb-bin").value.trim();
+        settings.gdClientId = document.getElementById("s-gd-client-id").value.trim();
         save(STORE_SETTINGS, settings);
         render();
         toast("Settings saved ✓");
@@ -1738,6 +1754,148 @@
       document.getElementById("input-date").value = today();
       updateWeekday(today());
       render();
+
+      // ── GOOGLE DRIVE BACKUP ───────────────────────────────────
+      const GD_SCOPE     = "https://www.googleapis.com/auth/drive.appdata";
+      const GD_FILENAME  = "hourlog_backup.json";
+      let   gdToken      = null;   // cached access token
+
+      function gdStatus(msg, type) {
+        const el = document.getElementById("gd-status");
+        el.textContent = msg;
+        el.className = "jb-status " + (type || "");
+      }
+
+      // Load the Google Identity Services script on demand
+      function loadGIS() {
+        return new Promise((resolve, reject) => {
+          if (window.google?.accounts?.oauth2) { resolve(); return; }
+          const s = document.createElement("script");
+          s.src = "https://accounts.google.com/gsi/client";
+          s.onload = resolve;
+          s.onerror = () => reject(new Error("Failed to load Google Identity Services"));
+          document.head.appendChild(s);
+        });
+      }
+
+      // Get an access token via popup (one-tap token client)
+      function gdAuthorize() {
+        return new Promise(async (resolve, reject) => {
+          const clientId = settings.gdClientId || document.getElementById("s-gd-client-id").value.trim();
+          if (!clientId) { reject(new Error("Enter your Google Client ID in settings first")); return; }
+          try { await loadGIS(); } catch(e) { reject(e); return; }
+          const client = google.accounts.oauth2.initTokenClient({
+            client_id: clientId,
+            scope: GD_SCOPE,
+            callback: (resp) => {
+              if (resp.error) { reject(new Error(resp.error)); return; }
+              gdToken = resp.access_token;
+              resolve(gdToken);
+            }
+          });
+          client.requestAccessToken({ prompt: gdToken ? "" : "consent" });
+        });
+      }
+
+      // Find existing backup file ID in appDataFolder
+      async function gdFindFile(token) {
+        const res = await fetch(
+          "https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&fields=files(id,name)&q=name%3D%27" + GD_FILENAME + "%27",
+          { headers: { Authorization: "Bearer " + token } }
+        );
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error?.message || "Drive list error");
+        return data.files?.[0]?.id || null;
+      }
+
+      // Save backup to Drive (create or update)
+      async function gdriveSave() {
+        gdStatus("Connecting to Google…", "inf");
+        try {
+          const token = await gdAuthorize();
+          gdStatus("Saving to Drive…", "inf");
+
+          const payload = JSON.stringify({
+            version: 1,
+            savedAt: new Date().toISOString(),
+            settings: { wage: settings.wage, currency: settings.currency },
+            entries
+          }, null, 2);
+
+          const fileId = await gdFindFile(token);
+          let res;
+
+          if (fileId) {
+            // Update existing file
+            res = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
+              method: "PATCH",
+              headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" },
+              body: payload
+            });
+          } else {
+            // Create new file in appDataFolder (hidden from user's Drive UI)
+            const meta = JSON.stringify({ name: GD_FILENAME, parents: ["appDataFolder"] });
+            const form = new FormData();
+            form.append("metadata", new Blob([meta], { type: "application/json" }));
+            form.append("file",     new Blob([payload], { type: "application/json" }));
+            res = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart", {
+              method: "POST",
+              headers: { Authorization: "Bearer " + token },
+              body: form
+            });
+          }
+
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error?.message || "Upload failed");
+          gdStatus(`✓ Saved ${entries.length} entries to Drive`, "ok");
+        } catch(err) {
+          gdStatus("✗ " + err.message, "err");
+        }
+      }
+
+      // Load backup from Drive
+      async function gdriveLoad() {
+        gdStatus("Connecting to Google…", "inf");
+        try {
+          const token = await gdAuthorize();
+          gdStatus("Loading from Drive…", "inf");
+
+          const fileId = await gdFindFile(token);
+          if (!fileId) {
+            gdStatus("⚠ No backup found on Drive — save one first", "err");
+            return;
+          }
+
+          const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+            headers: { Authorization: "Bearer " + token }
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error?.message || "Download failed");
+
+          const pulled = Array.isArray(data) ? data : (data.entries || []);
+          if (!Array.isArray(pulled)) throw new Error("Unexpected file format");
+
+          // Merge: remote wins on same date
+          const remoteMap = {};
+          pulled.forEach(e => { remoteMap[e.date] = e; });
+          const localOnly = entries.filter(e => !remoteMap[e.date]);
+          entries = [...pulled, ...localOnly].sort((a, b) => a.date.localeCompare(b.date));
+          save(STORE_ENTRIES, entries);
+
+          if (data.settings) {
+            if (data.settings.wage !== undefined) settings.wage = data.settings.wage;
+            if (data.settings.currency)           settings.currency = data.settings.currency;
+            save(STORE_SETTINGS, settings);
+            document.getElementById("s-wage").value     = settings.wage || "";
+            document.getElementById("s-currency").value = settings.currency || "$";
+          }
+
+          render();
+          gdStatus(`✓ Loaded ${pulled.length} entries from Drive`, "ok");
+        } catch(err) {
+          gdStatus("✗ " + err.message, "err");
+        }
+      }
 
       // ── PWA ───────────────────────────────────────────────────
       // Update <meta name="theme-color"> when theme changes so the
