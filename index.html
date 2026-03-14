@@ -221,6 +221,15 @@
       .field input[type="date"]::-webkit-calendar-picker-indicator {
         filter: invert(0.6);
       }
+      /* Force full-width on iOS Safari — it ignores width:100% on date inputs by default */
+      .field input[type="date"] {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+        display: block;
+      }
       .date-weekday {
         display: inline-block;
         margin-left: 6px;
